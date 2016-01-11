@@ -1,5 +1,5 @@
 /**
- * JUnit reporter for QUnit v1.0.3-pre
+ * JUnit reporter for QUnit v1.0.2
  *
  * https://github.com/JamesMGreene/qunit-reporter-junit
  *
@@ -84,6 +84,7 @@
 
 		// Ignore passing assertions
 		if (!data.result) {
+
 			currentTest.failedAssertions.push(data);
 
 			// Add log message of failure to make it easier to find in Jenkins CI
@@ -119,6 +120,7 @@
 	});
 
 	var generateReport = function(results, run) {
+		var textOutput = '';
 		var pad = function(n) {
 			return n < 10 ? '0' + n : n;
 		};
@@ -275,6 +277,10 @@
 				for (a = 0, aLen = test.failedAssertions.length; a < aLen; a++) {
 					assertion = test.failedAssertions[a];
 
+					textOutput = '\x1B[31mTest failed: ' + assertion.module + ': ' + assertion.name + '\x1B[39m\r\n';
+					textOutput += 'Failed assertion: ' + assertion.message + '\r\n';
+					textOutput += assertion.source + '\r\n';
+
 					isEmptyElement = assertion && !(assertion.actual && assertion.expected);
 					xmlWriter.start('failure', { type: 'AssertionFailedError', message: assertion.message }, isEmptyElement);
 					if (!isEmptyElement) {
@@ -310,7 +316,8 @@
 		// Invoke the user-defined callback
 		QUnit.jUnitReport({
 			results: results,
-			xml: xmlWriter.getString()
+			xml: xmlWriter.getString(),
+			text: textOutput
 		});
 	};
 
